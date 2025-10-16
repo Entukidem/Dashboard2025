@@ -1,0 +1,16 @@
+
+let
+  // Pulling info from the site's Rss feed url
+  Source = Xml. Tables(Web.Contents("https://www.bleepingcomputer.com/feed/")),
+
+  // Converting the data to a table
+  #"Changed Type" = Table. TransformColumnTypes(Source, {{"Attribute:version", Int64. Type}}),
+  #"Expanded channel" = Table .ExpandTableColumn (#"Changed Type",
+  "channel", {"item"}, ("item"}),
+  #"Expanded item" = Table.ExpandTableColumn (#"Expanded channel", "item", {"title", "link", "pubDate",\"category", "guid", "description"}, {"title","link","pubDate","category","guid","description"}),
+
+  // Creating a columfor dates and removing rows with dates older than the past month (May adjust in the future)
+  = Table.AddColumn(#"Expanded item", "ParsedDate", each DateTime. FromText(Text.Middle([pubDate], 5,20))),
+  #"Filtered Rows" = Table.SelectRows(#"Added Custom", each Date.IsInPreviousMonth(Date.AddMonths(DateTime.FixedLocalNow(), -1)))
+in
+  #"Filtered Rows"
