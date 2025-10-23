@@ -1,0 +1,21 @@
+let
+token = KnowBe4Token,
+url = " https://us.api.knowbe4.com/v1/phishing/campaigns" ,
+
+// Making the API call and returning the results as a JSON object
+response = Json.Document(Web.Contents(url, [
+
+Headers = [
+Authorization = " Bearer "  &amp  token,
+#" Content-Type"  = " application/json" ,
+Accept = " application/json" 
+]
+])),
+
+// Formatting the results as a table and filtering
+campaignsTable = Table.FromRecords(response),
+finalTable = Table.SelectColumns(campaignsTable, {
+" campaign_id" , " name" , " last_phish_prone_percentage" , " last_run" , " status" 
+})
+in
+finalTable
